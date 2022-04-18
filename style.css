@@ -3,8 +3,13 @@ body
 
 {
   background-color: lightblue;
-  font-size: 300 %;
   
-  <!-- <center> <a href = "index.html">Strona główna</a><br/> </center> -->
   
+}
+
+
+p
+{
+
+  front-size: 300px;
 }
