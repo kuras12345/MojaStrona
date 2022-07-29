@@ -109,3 +109,11 @@ background-color: #3095d3;
 {
 background-color: #d95333;
 }
+
+.footer
+{
+	
+	text-align: center;
+	background-color: #222222;
+	padding: 30px;
+}
