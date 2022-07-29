@@ -25,7 +25,17 @@
 	<div style=clear:both;></div>
 	</div>
 	</div>
-	<div class="nav"></div>
+	<div class="nav">
+	<ol>
+		<li><a href="#">Strona główna</a></li>
+		<li><a href="#">Strona1</a></li>
+		<li><a href="#">Strona2</a></li>
+		<li><a href="#">Strona3</a></li>
+		<li><a href="#">Strona4</a></li>
+		<li><a href="#">Strona5</a></li>
+		</ol>
+	
+	</div>
 	
 	<div class="content">
 	Kartę opracowano na podstawie danych dostarczonych przez producentów składników produktu, przepisów krajowych, obowiązujących w chwili sporządzania Karty oraz posiadanej wiedzy. Informacje zawarte w Karcie należy traktować tylko i wyłącznie jako pomoc celem bezpiecznego stosowania jak również postępowania w transporcie, dystrybucji i przechowywaniu. Karta nie jest świadectwem jakości produktu. Informacje zawarte w Karcie dotyczą wyłącznie wymienionego produktu i nie mogą być przenoszone na produkty podobne. Autor nie ponosi odpowiedzialności wynikającej z niewłaściwego wykorzystania informacji zawartych w Karcie.
@@ -42,30 +52,52 @@
 	<div class="footer">moja strona &copy; 2022</div>
 	</div>
 	<script src="jguery-3.6.0.min.js" ></script>
-	<script src="jquery-3.6.0.min.js"></script>
 	
-<script>
+
+	<script>
+
+
 
 	$(document).ready(function() {
+
 	var NavY = $('.nav').offset().top;
+
 	 
+
 	var stickyNav = function(){
+
 	var ScrollY = $(window).scrollTop();
+
 		  
+
 	if (ScrollY > NavY) { 
+
 		$('.nav').addClass('sticky');
+
 	} else {
+
 		$('.nav').removeClass('sticky'); 
+
 	}
+
 	};
+
 	 
+
 	stickyNav();
+
 	 
+
 	$(window).scroll(function() {
+
 		stickyNav();
+
 	});
+
 	});
+
 	
+
 </script>
 </body>
 </html>
