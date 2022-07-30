@@ -180,7 +180,7 @@ margin:0;
 height:40px;
 display:none;
 }
-ol > li: hover > ul
+ol > li:hover > ul
 {
 display:block;
 }
