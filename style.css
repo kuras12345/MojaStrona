@@ -182,7 +182,7 @@ display:none;
 }
 ol > li: hover > ul
 {
-diskplay:block;
+display:block;
 }
 
 ol > li > ul > li
