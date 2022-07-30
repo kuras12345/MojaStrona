@@ -167,7 +167,7 @@ ol > li:hover
 	background-color: #cf6969;
 }
 
-ol >li:hover > a
+ol >li:hover > 
 {
 	color: #451717;
 }
