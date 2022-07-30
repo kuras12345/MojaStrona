@@ -192,3 +192,8 @@ ol > li > ul > li:hover
 {
 	background-color: #c34f4f;
 }
+
+ol > li > ul > li:hover > a
+{
+	color:451717;
+}
