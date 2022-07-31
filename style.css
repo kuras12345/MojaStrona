@@ -167,7 +167,7 @@ ol > li:hover
 	background-color: #cf6969;
 }
 
-ol >li:hover > 
+ol >li:hover > a
 {
 	color: #451717;
 }
@@ -201,6 +201,11 @@ ol > li > ul > li:hover
 ol > li > ul > li:hover > a
 {
 	color: #451717;
+
 }
 
-
+a.tilelink
+{
+	color: #ffffff;
+	text-decoration: none;
+}
