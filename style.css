@@ -208,4 +208,7 @@ a.tilelink
 {
 	color: #ffffff;
 	text-decoration: none;
+	display: block;
+	width: 250px;
+	height: 155px;
 }
