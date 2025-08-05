@@ -1,7 +1,0 @@
-
-
-
-
-```shell
-python --version
-```
