@@ -68,6 +68,25 @@
 </script>
 
 moj tekst
+
+<script>
+    const copyButton = document.querySelector('.copy-button');
+    const codeBlock = document.getElementById('my-code');
+
+    copyButton.addEventListener('click', () => {
+        const codeToCopy = codeBlock.innerText;
+
+        navigator.clipboard.writeText(codeToCopy).then(() => {
+            copyButton.textContent = 'Skopiowano!';
+            setTimeout(() => {
+                copyButton.textContent = 'Kopiuj';
+            }, 2000);
+        }).catch(err => {
+            console.error('Błąd podczas kopiowania: ', err);
+            copyButton.textContent = 'Błąd!';
+        });
+    });
+</script>
 	
 </body>
 </html>
