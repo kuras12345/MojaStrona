@@ -1,77 +1,71 @@
-<!DOCTYPE HTML>
+
+		  
+<!DOCTYPE html>
 <html lang="pl">
 <head>
-
-	<meta charset="utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-	
-	<title>Moja strona</title>
-	
-	<meta name="description" content="Serwis o starych grach pochodzących z Nintendo Entertainment System" />
-	<meta name="keywords" content="gry, komputerowe, retro, nes, konsole, retrogranie, stare gry" />
-	
-	<link href="style.css" rel="stylesheet" type="text/css" />
-	<link href="jQueryAssets/jquery.ui.core.min.css" rel="stylesheet" type="text/css">
-	<link href="jQueryAssets/jquery.ui.theme.min.css" rel="stylesheet" type="text/css">
-	<link href="jQueryAssets/jquery.ui.button.min.css" rel="stylesheet" type="text/css">
-<script src="jQueryAssets/jquery-1.11.1.min.js"></script>
-<script src="jQueryAssets/jquery.ui-1.10.4.button.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopiowanie kodu</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .code-container {
+            position: relative;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 15px;
+            padding-top: 40px; /* Robimy więcej miejsca na górze na przycisk */
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s; /* Płynna zmiana koloru */
+        }
+        .copy-button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap; /* Zawijanie tekstu w razie potrzeby */
+        }
+    </style>
 </head>
-
 <body>
-   
-		<div class="header">
-		
-			<div class="logo">
-			
-				<span style="color: #c34f4f">Moja</span>strona
-				<div style="clear:both;"></div>
-			</div>
-		</div>
-		<div class="nav">
-			<ol>
-				<li><a href="#">Strona główna</a></li>
-				<li><a href="#">Przepisy</a>
-					<ul>
-						<li><a href="#">Ustawy</a></li>
-						<li><a href="#">Rozporzadzenia</a></li>
-						<li><a href="#">Egzamin państwowy teoretyczny</a></li>
-						<li><a href="https://online.fliphtml5.com/ahmqq/prib/">Egzamin państwowy praktyczny</a></li>
-					</ul>
-				</li>
-				<li><a href="#">Testy</a>
-					<ul>
-						<li><a href="#">Pierwszy</a></li>
-						<li><a href="#">Druga</a></li>
-						<li><a href="#">Trzecia</a></li>
-						<li><a href="#">Czwarta</a></li>
-					</ul>
-				</li>
-				<li><a href="#">C++ </a>
-					<ul>
-						<li><a href="funkcja_kalkulator.exe">Dodawanie</a></li>
-						<li><a href="#">Druga</a></li>
-						<li><a href="#">Trzecia</a></li>
-						<li><a href="#">Czwarta</a></li>
-					</ul>
-				</li>
-				<li><a href="#">Trzecia</a>
-					<ul>
-						<li><a href="#">Pierwsza</a></li>
-						<li><a href="#">Druga</a></li>
-						<li><a href="#">Trzecia</a></li>
-						<li><a href="#">Czwarta</a></li>
-					</ul>
-				</li>
-				<li><a href="#">O autorach</a></li>
-			</ol>
-		
-		</div>
-		
-		<div class="content">
-		    </div>
-	
+
+    <h1>Mój fragment kodu</h1>
+    <p>Kliknij przycisk, aby skopiować poniższą komendę.</p>
+
+    <div class="code-container">
+        <button class="copy-button">Kopiuj</button>
+        <pre><code id="my-code">python --version</code></pre>
+    </div>
+
+<script>
+    const copyButton = document.querySelector('.copy-button');
+    const codeBlock = document.getElementById('my-code');
+
+    copyButton.addEventListener('click', () => {
+        const codeToCopy = codeBlock.innerText;
+
+        navigator.clipboard.writeText(codeToCopy).then(() => {
+            copyButton.textContent = 'Skopiowano!';
+            setTimeout(() => {
+                copyButton.textContent = 'Kopiuj';
+            }, 2000);
+        }).catch(err => {
+            console.error('Błąd podczas kopiowania: ', err);
+            copyButton.textContent = 'Błąd!';
+        });
+    });
+</script>
 
 </body>
 </html>
-		  
