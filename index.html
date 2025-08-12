@@ -1,75 +1,61 @@
 
-		  
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .code-container {
-            position: relative;
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 15px;
-            padding-top: 40px; /* Robimy więcej miejsca na górze na przycisk */
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .copy-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s; /* Płynna zmiana koloru */
-        }
-        .copy-button:hover {
-            background-color: #0056b3;
-        }
-        pre {
-            margin: 0;
-            white-space: pre-wrap; /* Zawijanie tekstu w razie potrzeby */
-        }
-    </style>
+    <title>Moja Strona z Kopiowaniem</title>
 </head>
 <body>
 
-	
-    
-
     <div class="code-container">
+        <p><b>Pierwszy fragment:</b></p>
         <button class="copy-button">Kopiuj</button>
-        <pre><code id="my-code">ala ma kota</code></pre>
+        <pre><code class="code-to-copy">ala ma kota</code></pre>
     </div>
 
-<script>
-    const copyButton = document.querySelector('.copy-button');
-    const codeBlock = document.getElementById('my-code');
+    <hr> <div class="code-container">
+        <p><b>Drugi fragment (np. link):</b></p>
+        <button class="copy-button">Kopiuj</button>
+        <pre><code class="code-to-copy">https://github.com</code></pre>
+    </div>
 
-    copyButton.addEventListener('click', () => {
+
+    <script>
+        // Znajdź WSZYSTKIE przyciski z klasą 'copy-button'
+const allCopyButtons = document.querySelectorAll('.copy-button');
+
+// Dla każdego znalezionego przycisku...
+allCopyButtons.forEach(copyButton => {
+
+    // ...dodaj nasłuchiwanie na kliknięcie
+    copyButton.addEventListener('click', (event) => {
+        
+        // Znajdź najbliższy "rodzicielski" kontener dla klikniętego przycisku
+        const container = event.target.closest('.code-container');
+        
+        // Wewnątrz tego kontenera znajdź element z tekstem do skopiowania
+        const codeBlock = container.querySelector('.code-to-copy');
+        
+        // Pobierz tekst z tego elementu
         const codeToCopy = codeBlock.innerText;
 
+        // Użyj API schowka, aby skopiować tekst
         navigator.clipboard.writeText(codeToCopy).then(() => {
+            // Jeśli się udało, zmień tekst przycisku
             copyButton.textContent = 'Skopiowano!';
+            
+            // Po 2 sekundach przywróć oryginalny tekst
             setTimeout(() => {
                 copyButton.textContent = 'Kopiuj';
             }, 2000);
+
         }).catch(err => {
+            // Jeśli wystąpił błąd, pokaż go w konsoli
             console.error('Błąd podczas kopiowania: ', err);
             copyButton.textContent = 'Błąd!';
         });
     });
-</script>
+});    </script>
 
-moj tekst
-
-
-	
 </body>
 </html>
