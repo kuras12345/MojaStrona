@@ -1,0 +1,11 @@
+
+/* To jest zawartość pliku style.css */
+
+.kontener-nawigacji {
+  display: flex; /* Włączamy "magiczny" tryb Flexbox */
+  align-items: center; /* Wyrównujemy wszystko ładnie w pionie */
+}
+
+.kontener-nawigacji a {
+  margin-left: auto; /* To jest polecenie, które wypycha link maksymalnie w prawo */
+}
