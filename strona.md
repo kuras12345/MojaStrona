@@ -20,7 +20,6 @@ if __name__ == '__main__':
 
 # test.py
 # nazwa pliku: test.kv
-	 #  uwaga napis Label: umiescic w nawiasach kątowych
-
+	
 <Label>:
     text: 'Witaj  Świecie!'
