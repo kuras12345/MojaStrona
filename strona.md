@@ -4,7 +4,7 @@
 
 
 
-#main.py
+# main.py
 	 # Potrzebujemy klasy App. Nasza aplikacja będzie po niej dziedziczyć.
 from kivy.app import App
 # Potrzebujemy również widget Label
@@ -18,3 +18,9 @@ class TestApp(App):
 if __name__ == '__main__':
     TestApp().run()
 
+# test.py
+# nazwa pliku: test.kv
+	 #  uwaga napis Label: umiescic w nawiasach kątowych
+
+<Label>:
+    text: 'Witaj  Świecie!'
