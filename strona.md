@@ -3,7 +3,7 @@
 
 
 
----
+---------------------------------------------------------------------------
 # main.py
 	 # Potrzebujemy klasy App. Nasza aplikacja będzie po niej dziedziczyć.
 from kivy.app import App
@@ -17,9 +17,10 @@ class TestApp(App):
 # Tutaj właśnie uruchamiamy aplikację
 if __name__ == '__main__':
     TestApp().run()
----
+-------------------------------------------------------------------------
 # test.py
 # nazwa pliku: test.kv
 	
 <Label>:
     text: 'Witaj  Świecie!'
+------------------------------------------------------------------------
