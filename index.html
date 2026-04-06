@@ -8,65 +8,11 @@
 <body>
 <p>Python Kivy </p>
 
-<hr />
 
-<p><strong>Hello World </strong></p>
-	
-<div style="position: relative; background-color: #f3f3f3; border: 1px solid #ddd; border-radius: 8px; padding: 16px; padding-top: 40px; margin-top: 1em; font-family: monospace;">
- <pre id="snippet1" style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">#main.py
-	 # Potrzebujemy klasy App. Nasza aplikacja będzie po niej dziedziczyć. 
-from kivy.app import App
-# Potrzebujemy również widget Label
-from kivy.uix.label import Label
-# Oto klasa aplikacji. Dziedziczy ona po klasie App
-class TestApp(App):
-    def build(self):
-       return Label()
-      #return Label(text='Hello World!')
-# Tutaj właśnie uruchamiamy aplikację
-if __name__ == '__main__':
-    TestApp().run()
-	 
-<!-- <button onclick="copyFromElement('snippet1', this)" style="position: absolute; top: 10px; right: 10px; cursor: pointer; padding: 6px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc;">
- Kopiuj
- </button> -->
-</div>
-	
-<script>
-function copyFromElement(elementId, button) {
-  const codeBlock = document.getElementById(elementId);
-  if (!codeBlock) {
-    console.error('Element o ID ' + elementId + ' nie został znaleziony.');
-    return;
-  }
-  const textToCopy = codeBlock.innerText;
-  navigator.clipboard.writeText(textToCopy).then(() => {
-    button.innerText = 'Skopiowano! ✅';
-    setTimeout(() => {
-      button.innerText = 'Kopiuj';
-    }, 2000);
-  }).catch(err => {
-    console.error('Błąd podczas kopiowania:', err);
-    button.innerText = 'Błąd';
-  });
-}
-</script>
-
-<p><strong>test.kv</strong></p>
-	
-<div style="position: relative; background-color: #f3f3f3; border: 1px solid #ddd; border-radius: 8px; padding: 16px; padding-top: 40px; margin-top: 1em; font-family: monospace;">
- <pre id="snippet2" style="margin: 0; white-space: pre-wrap; word-wrap: break-word;"># nazwa pliku: test.kv 
-	 #  uwaga napis Label: umiescic w nawiasach kątowych
-
-Label:
-    text: 'Witaj  Świecie!'	
- <!-- <button onclick="copyFromElement('snippet2', this)" style="position: absolute; top: 10px; right: 10px; cursor: pointer; padding: 6px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc;">
- Kopiuj
- </button> -->
-</div>
 	
 
-<!-- <p align ="right"><a href="YTPRO.apk">youtubePro</a></p> -->
+
+
 
 
 
