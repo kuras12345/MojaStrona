@@ -161,7 +161,7 @@
 				id: a.id, name: a.name, icon: a.icon, url: a.url,
 				type: 'app',
 				color: cats.find(c => c.id === a.cat).color,
-				halfW: 26, halfH: 26
+				halfW: 45, halfH: 45
 			}))
 		];
 
@@ -221,8 +221,8 @@
 
 		// ====== UKŁAD STATYCZNY — kategorie po lewej i prawej, łańcuch w dół ======
 		function layoutNodes() {
-			const ySpacing = Math.min(110, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
-			const startY = Math.max(80, H * 0.13);
+			const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
+			const startY = Math.max(80, H * 0.12);
 
 			cats.forEach((c, idx) => {
 				const ch = chainForCat(c.id);
@@ -331,41 +331,32 @@
 		// --- Aplikacje ---
 		const appNodes = node.filter(d => d.type === 'app');
 
-		// Niewidoczna większa strefa kliknięcia dla wygody dotyku
+		// Widoczny kwadrat - większy, pomieści ikonę i napis
 		appNodes.append('rect')
-			.attr('x', -32).attr('y', -32)
-			.attr('width', 64).attr('height', 64)
-			.attr('rx', 14)
-			.attr('fill', 'transparent')
-			.attr('pointer-events', 'all');
-
-		// Widoczny kwadrat z ikoną
-		appNodes.append('rect')
-			.attr('x', -26).attr('y', -26)
-			.attr('width', 52).attr('height', 52)
-			.attr('rx', 13)
+			.attr('x', -45).attr('y', -45)
+			.attr('width', 90).attr('height', 90)
+			.attr('rx', 16)
 			.attr('fill', d => d.color)
 			.attr('stroke', 'rgba(255,255,255,0.25)')
-			.attr('pointer-events', 'none');
+			.attr('pointer-events', 'all');
 
+		// Ikona + nazwa razem w środku kwadratu
 		appNodes.each(function(d) {
 			const fo = d3.select(this).append('foreignObject')
-				.attr('x', -16).attr('y', -16).attr('width', 32).attr('height', 32);
+				.attr('x', -45).attr('y', -45).attr('width', 90).attr('height', 90);
 			fo.append('xhtml:div')
-				.style('width', '32px').style('height', '32px')
-				.style('display', 'flex').style('align-items', 'center').style('justify-content', 'center')
-				.style('color', 'white').style('font-size', '26px')
+				.style('width', '90px').style('height', '90px')
+				.style('display', 'flex').style('flex-direction', 'column')
+				.style('align-items', 'center').style('justify-content', 'center')
+				.style('gap', '4px').style('padding', '8px')
+				.style('box-sizing', 'border-box')
+				.style('color', 'white').style('text-align', 'center')
 				.style('pointer-events', 'none')
-				.html('<i class="ti ti-' + d.icon + '" aria-hidden="true"></i>');
+				.html(
+					'<i class="ti ti-' + d.icon + '" aria-hidden="true" style="font-size:30px;line-height:1;"></i>' +
+					'<span style="font-size:11px;font-weight:500;line-height:1.15;word-break:break-word;">' + d.name + '</span>'
+				);
 		});
-
-		// Etykieta pod ikoną
-		appNodes.append('text')
-			.attr('text-anchor', 'middle').attr('dy', 50)
-			.attr('font-size', 12).attr('font-weight', 500)
-			.attr('fill', 'rgba(255,255,255,0.9)').attr('font-family', 'Arial, sans-serif')
-			.attr('pointer-events', 'none')
-			.text(d => d.name);
 
 		// ====== INTERAKCJE ======
 		if (!isTouch) {
