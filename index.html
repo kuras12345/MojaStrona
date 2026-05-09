@@ -183,20 +183,22 @@
 		];
 
 		// === APLIKACJE ===
-		// Pole `cat`    = id kategorii (Android/iOS) — wymagane
-		// Pole `subcat` = id podkategorii — OPCJONALNE
-		//                 jeśli podane, ikona pojawi się pod podkategorią
-		//                 jeśli pominięte, ikona zawiśnie bezpośrednio pod kategorią
+		// Pole `cat`    = id kategorii (Android/iOS) — wymagane (steruje kolorem i kolumną w układzie)
+		// Pole `parent` = id rodzica — OPCJONALNE
+		//                 może wskazywać na podkategorię (np. 'android-programy')
+		//                 LUB na inną aplikację (np. 'ventusky' — wtedy ta apka wisi pod tamtą)
+		//                 jeśli pominięte, ikona zawiśnie bezpośrednio pod kategorią `cat`
 		// Pole `url`    = link do pobrania (kliknięcie/tapnięcie ikony otworzy/pobierze plik)
 		// Pole `name`   = nazwa wyświetlana pod ikoną i w tooltipie
 		// Pole `icon`   = ikona z https://tabler-icons.io/ (bez prefiksu "ti-")
 		const apps = [
 			{
-				id:   'sygnic',
-				cat:  'android',
-				name: 'Sygnic Truck',
-				icon: 'truck',
-				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
+				id:     'sygnic',
+				cat:    'android',
+				parent: 'ventusky',                  // ← Sygnic Truck wisi pod Ventusky
+				name:   'Sygnic Truck',
+				icon:   'truck',
+				url:    'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
 			},
 			{
 				id:   'zoomnotes',
@@ -208,14 +210,15 @@
 			{
 				id:     'ventusky',
 				cat:    'android',
-				subcat: 'android-programy',          // ← Ventusky wisi pod podkategorią "Programy"
+				parent: 'android-programy',          // ← Ventusky wisi pod podkategorią "Programy"
 				name:   'Ventusky',
 				icon:   'cloud',
 				url:    'https://github.com/kuras12345/moje-lfs-projekt/raw/main/Ventusky.apk'
 			}
 			// Żeby dodać kolejną apkę, skopiuj blok powyżej. Przykłady:
 			// { id: 'mojaApka',    cat: 'android', name: 'Moja Apka', icon: 'device-mobile', url: 'https://...' }
-			// { id: 'innaProgram', cat: 'android', subcat: 'android-programy', name: 'Inny', icon: 'app-window', url: 'https://...' }
+			// { id: 'innaProgram', cat: 'android', parent: 'android-programy', name: 'Inny', icon: 'app-window', url: 'https://...' }
+			// { id: 'pluginX',     cat: 'android', parent: 'ventusky', name: 'Plugin', icon: 'puzzle', url: 'https://...' }   ← wisi pod Ventusky
 		];
 
 		// === BUDOWA WĘZŁÓW ===
@@ -252,10 +255,10 @@
 
 		// === BUDOWA POŁĄCZEŃ ===
 		// 1) kategoria → podkategoria
-		// 2) aplikacja → podkategoria (jeśli `subcat` podane) LUB kategoria (jeśli nie)
+		// 2) aplikacja → rodzic z `parent` (podkategoria LUB inna aplikacja) ALBO kategoria z `cat`
 		const links = [
 			...subcats.map(s => ({ source: s.cat, target: s.id })),
-			...apps.map(a => ({ source: a.subcat || a.cat, target: a.id }))
+			...apps.map(a => ({ source: a.parent || a.cat, target: a.id }))
 		];
 
 		const svg = d3.select('#graph');
