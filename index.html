@@ -69,6 +69,29 @@
 		.neuron-launcher svg:active {
 			cursor: grabbing;
 		}
+		/* Tooltip pokazywany po najechaniu na aplikację */
+		.neuron-tooltip {
+			position: absolute;
+			background: #fff;
+			color: #222;
+			padding: 6px 10px;
+			border-radius: 6px;
+			font-size: 12px;
+			font-family: Arial, sans-serif;
+			pointer-events: none;
+			opacity: 0;
+			transition: opacity 0.15s;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+			white-space: nowrap;
+			z-index: 20;
+		}
+		.neuron-tooltip.visible {
+			opacity: 1;
+		}
+		/* Aplikacje, które mają link, mają wskaźnik "rączki" */
+		.app-clickable {
+			cursor: pointer !important;
+		}
 		.neuron-title {
 			text-align: center;
 			color: #c34f4f;
@@ -118,11 +141,12 @@
 
 		<!-- Sieć węzłów - Neuron Launcher -->
 		<div class="neuron-launcher">
-			<div class="info">Przeciągnij węzły · scroll = zoom</div>
+			<div class="info">Przeciągnij węzły · scroll = zoom · kliknij ikonę aplikacji żeby pobrać</div>
 			<div class="controls">
 				<button id="reset-btn">Reset</button>
 			</div>
 			<svg id="graph"></svg>
+			<div class="neuron-tooltip" id="tooltip"></div>
 		</div>
 
 	</div>
@@ -131,43 +155,52 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 	<script>
 	(function() {
-		// Kategorie (większe węzły)
+		// === KATEGORIE (większe pigułki) ===
 		const cats = [
-			{ id: 'maps',    label: 'Mapy',       color: '#378ADD' },
-			{ id: 'tools',   label: 'Narzędzia',  color: '#7F77DD' },
-			{ id: 'editor',  label: 'Edytor',     color: '#1D9E75' },
-			{ id: 'travel',  label: 'Podróże',    color: '#D85A30' }
+			{ id: 'android', label: 'Android',  color: '#1D9E75' },
+			{ id: 'ios',     label: 'iOS',      color: '#378ADD' }
 		];
 
-		// Aplikacje (mniejsze węzły z ikonami)
+		// === APLIKACJE ===
+		// Pole `url`  = link do pobrania (kliknięcie ikony otworzy/pobierze plik)
+		// Pole `name` = nazwa wyświetlana w tooltipie
+		// Pole `icon` = ikona z https://tabler-icons.io/ (bez prefiksu "ti-")
 		const apps = [
-			{ id: 'a1',  cat: 'maps',   icon: 'map-pin' },
-			{ id: 'a2',  cat: 'maps',   icon: 'compass' },
-			{ id: 'a3',  cat: 'maps',   icon: 'route' },
-			{ id: 'a4',  cat: 'tools',  icon: 'calculator' },
-			{ id: 'a5',  cat: 'tools',  icon: 'calendar' },
-			{ id: 'a6',  cat: 'tools',  icon: 'clock' },
-			{ id: 'a7',  cat: 'tools',  icon: 'bell' },
-			{ id: 'a8',  cat: 'editor', icon: 'pencil' },
-			{ id: 'a9',  cat: 'editor', icon: 'photo' },
-			{ id: 'a10', cat: 'editor', icon: 'palette' },
-			{ id: 'a11', cat: 'travel', icon: 'plane' },
-			{ id: 'a12', cat: 'travel', icon: 'building' },
-			{ id: 'a13', cat: 'travel', icon: 'ticket' },
-			{ id: 'a14', cat: 'travel', icon: 'world' }
+			{
+				id:   'sygnic',
+				cat:  'android',
+				name: 'Sygnic Truck',
+				icon: 'truck',
+				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
+			},
+			{
+				id:   'zoomnotes',
+				cat:  'ios',
+				name: 'ZoomNotes',
+				icon: 'notes',
+				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/ZoomNotes.ipa'
+			}
+			// Żeby dodać kolejną aplikację, skopiuj jeden blok powyżej i zmień pola.
+			// Np.:
+			// { id: 'mojaApka', cat: 'android', name: 'Moja Apka', icon: 'device-mobile', url: 'https://...' }
 		];
 
 		const nodes = [
 			...cats.map(c => ({ id: c.id, label: c.label, type: 'cat', color: c.color, r: 34 })),
-			...apps.map(a => ({ id: a.id, icon: a.icon, type: 'app', color: cats.find(c => c.id === a.cat).color, r: 18 }))
+			...apps.map(a => ({
+				id:    a.id,
+				name:  a.name,
+				icon:  a.icon,
+				url:   a.url,
+				type:  'app',
+				color: cats.find(c => c.id === a.cat).color,
+				r:     22
+			}))
 		];
 
-		const links = [];
-		apps.forEach(a => links.push({ source: a.cat, target: a.id }));
-		// Połączenia między kategoriami
-		links.push({ source: 'maps',  target: 'travel' });
-		links.push({ source: 'tools', target: 'editor' });
-		links.push({ source: 'tools', target: 'maps' });
+		const links = apps.map(a => ({ source: a.cat, target: a.id }));
+		// Łączymy też kategorie ze sobą (linia między Android i iOS)
+		links.push({ source: 'android', target: 'ios' });
 
 		const svg = d3.select('#graph');
 		const W = svg.node().clientWidth || 900;
@@ -175,32 +208,34 @@
 		svg.attr('viewBox', `0 0 ${W} ${H}`);
 
 		const g = svg.append('g');
+		const tooltip = document.getElementById('tooltip');
+		const launcherEl = document.querySelector('.neuron-launcher');
 
-		// Zoom i pan
+		// Zoom + pan
 		svg.call(d3.zoom().scaleExtent([0.4, 3]).on('zoom', e => g.attr('transform', e.transform)));
 
 		// Symulacja fizyki
 		const sim = d3.forceSimulation(nodes)
-			.force('link', d3.forceLink(links).id(d => d.id).distance(d => d.target.type === 'app' ? 70 : 140).strength(0.7))
-			.force('charge', d3.forceManyBody().strength(-280))
+			.force('link', d3.forceLink(links).id(d => d.id).distance(d => d.target.type === 'app' ? 90 : 160).strength(0.7))
+			.force('charge', d3.forceManyBody().strength(-320))
 			.force('center', d3.forceCenter(W / 2, H / 2))
-			.force('collide', d3.forceCollide().radius(d => d.r + 8));
+			.force('collide', d3.forceCollide().radius(d => d.r + 10));
 
 		// Linie (krawędzie)
 		const link = g.append('g')
 			.attr('stroke', 'rgba(255,255,255,0.3)')
 			.attr('stroke-opacity', 0.7)
-			.selectAll('line').data(links).join('line').attr('stroke-width', 1.2);
+			.selectAll('line').data(links).join('line').attr('stroke-width', 1.4);
 
 		// Węzły
 		const node = g.append('g').selectAll('g').data(nodes).join('g')
-			.style('cursor', 'grab')
+			.attr('class', d => d.type === 'app' && d.url ? 'app-clickable' : '')
 			.call(d3.drag()
-				.on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-				.on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+				.on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; d._dragged = false; })
+				.on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; d._dragged = true; })
 				.on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
 
-		// Kategorie - pigułki z tekstem
+		// === KATEGORIE: pigułka z tekstem ===
 		node.filter(d => d.type === 'cat')
 			.append('rect')
 			.attr('x', -55).attr('y', -16)
@@ -219,24 +254,52 @@
 			.attr('font-family', 'Arial, sans-serif')
 			.text(d => d.label);
 
-		// Aplikacje - kwadraty z ikonami
-		node.filter(d => d.type === 'app')
-			.append('rect')
-			.attr('x', -18).attr('y', -18)
-			.attr('width', 36).attr('height', 36)
-			.attr('rx', 9)
+		// === APLIKACJE: kwadrat z ikoną ===
+		const appNodes = node.filter(d => d.type === 'app');
+
+		appNodes.append('rect')
+			.attr('x', -22).attr('y', -22)
+			.attr('width', 44).attr('height', 44)
+			.attr('rx', 11)
 			.attr('fill', d => d.color)
 			.attr('stroke', 'rgba(255,255,255,0.25)');
 
-		node.filter(d => d.type === 'app').each(function(d) {
+		appNodes.each(function(d) {
 			const fo = d3.select(this).append('foreignObject')
-				.attr('x', -12).attr('y', -12).attr('width', 24).attr('height', 24);
+				.attr('x', -14).attr('y', -14).attr('width', 28).attr('height', 28);
 			fo.append('xhtml:div')
-				.style('width', '24px').style('height', '24px')
+				.style('width', '28px').style('height', '28px')
 				.style('display', 'flex').style('align-items', 'center').style('justify-content', 'center')
-				.style('color', 'white').style('font-size', '18px')
+				.style('color', 'white').style('font-size', '22px')
+				.style('pointer-events', 'none')   // ważne — kliknięcie idzie na grupę, nie na div
 				.html('<i class="ti ti-' + d.icon + '" aria-hidden="true"></i>');
 		});
+
+		// === TOOLTIP — po najechaniu pokazuje nazwę aplikacji ===
+		appNodes
+			.on('mouseenter', function(event, d) {
+				if (!d.name) return;
+				const rect = launcherEl.getBoundingClientRect();
+				tooltip.textContent = d.name;
+				tooltip.style.left = (event.clientX - rect.left + 12) + 'px';
+				tooltip.style.top  = (event.clientY - rect.top - 32) + 'px';
+				tooltip.classList.add('visible');
+			})
+			.on('mousemove', function(event) {
+				const rect = launcherEl.getBoundingClientRect();
+				tooltip.style.left = (event.clientX - rect.left + 12) + 'px';
+				tooltip.style.top  = (event.clientY - rect.top - 32) + 'px';
+			})
+			.on('mouseleave', function() {
+				tooltip.classList.remove('visible');
+			})
+			// === KLIKNIĘCIE — pobiera plik z `url` ===
+			.on('click', function(event, d) {
+				if (d._dragged) { d._dragged = false; return; } // ignoruj klik po przeciągnięciu
+				if (d.url) {
+					window.location.href = d.url;
+				}
+			});
 
 		// Aktualizacja pozycji w każdej klatce
 		sim.on('tick', () => {
@@ -245,7 +308,7 @@
 			node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
 		});
 
-		// Reset
+		// Reset układu
 		document.getElementById('reset-btn').addEventListener('click', () => {
 			nodes.forEach(n => { n.fx = null; n.fy = null; });
 			sim.alpha(1).restart();
