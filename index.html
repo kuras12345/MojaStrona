@@ -5,16 +5,30 @@
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
+	<!-- VIEWPORT - kluczowe dla mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="theme-color" content="#0d0d0d" />
+
 	<title>Moja strona</title>
 
 	<meta name="description" content="Serwis o starych grach pochodzących z Nintendo Entertainment System" />
 	<meta name="keywords" content="gry, komputerowe, retro, nes, konsole, retrogranie, stare gry" />
 
-	<!-- Ikony Tabler dla aplikacji w sieci węzłów -->
+	<!-- Ikony Tabler -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 
 	<style>
-		/* === FULL SCREEN — strona bez marginesów, bez paska przewijania === */
+		/* === RESET + FULL SCREEN === */
+		* {
+			-webkit-tap-highlight-color: transparent;   /* brak niebieskiego błysku po tapnięciu w iOS/Android */
+			-webkit-touch-callout: none;                 /* brak menu po długim przytrzymaniu */
+			-webkit-user-select: none;
+			user-select: none;
+			box-sizing: border-box;
+		}
 		html, body {
 			margin: 0;
 			padding: 0;
@@ -22,6 +36,9 @@
 			height: 100%;
 			overflow: hidden;
 			background: #0d0d0d;
+			overscroll-behavior: none;                   /* blokuje "bounce" w iOS Safari */
+			touch-action: none;                          /* nie przewijaj/nie zoomuj domyślnie */
+			-webkit-overflow-scrolling: auto;
 		}
 
 		/* === LAUNCHER — wypełnia cały viewport === */
@@ -31,12 +48,14 @@
 			background: radial-gradient(circle at 50% 50%, #1f1f1f 0%, #0a0a0a 100%);
 			overflow: hidden;
 			z-index: 1;
+			touch-action: none;
 		}
 		.neuron-launcher svg {
 			width: 100%;
 			height: 100%;
 			display: block;
 			cursor: grab;
+			touch-action: none;                          /* D3 zoom obsługuje pinch sam */
 		}
 		.neuron-launcher svg:active {
 			cursor: grabbing;
@@ -45,40 +64,67 @@
 		/* === Pasek z informacją + reset (na dole) === */
 		.launcher-bar {
 			position: fixed;
-			bottom: 24px;
+			bottom: calc(20px + env(safe-area-inset-bottom)); /* nie zachodzi na pasek "home" iPhone X+ */
 			left: 50%;
 			transform: translateX(-50%);
 			z-index: 10;
 			display: flex;
-			gap: 28px;
+			gap: 16px;
 			align-items: center;
 			background: rgba(13, 13, 13, 0.7);
 			backdrop-filter: blur(8px);
 			-webkit-backdrop-filter: blur(8px);
-			padding: 20px 36px;
-			border-radius: 50px;
+			padding: 12px 22px;
+			border-radius: 36px;
 			border: 1px solid rgba(255,255,255,0.08);
+			max-width: calc(100vw - 24px);
 		}
 		.launcher-bar .info {
-			font-size: 32px;
+			font-size: 16px;
 			color: #ddd;
 			font-family: Arial, sans-serif;
 		}
 		.launcher-bar button {
-			font-size: 30px;
-			padding: 14px 36px;
+			font-size: 15px;
+			padding: 10px 22px;
 			background: rgba(255,255,255,0.1);
 			color: #fff;
 			border: 1px solid rgba(255,255,255,0.2);
-			border-radius: 40px;
+			border-radius: 24px;
 			cursor: pointer;
 			font-family: Arial, sans-serif;
+			min-height: 44px;                            /* Apple HIG zalecane min. dla touch */
+			min-width: 44px;
+			-webkit-appearance: none;
+			appearance: none;
 		}
-		.launcher-bar button:hover {
-			background: rgba(255,255,255,0.18);
+		.launcher-bar button:active {
+			background: rgba(255,255,255,0.25);
+			transform: scale(0.96);
 		}
 
-		/* === Tooltip z nazwą aplikacji === */
+		/* === Mobile: krótszy tekst i mniejszy pasek === */
+		.info-desktop { display: inline; }
+		.info-mobile { display: none; }
+
+		@media (max-width: 700px) {
+			.launcher-bar {
+				gap: 10px;
+				padding: 10px 16px;
+				bottom: calc(14px + env(safe-area-inset-bottom));
+			}
+			.launcher-bar .info {
+				font-size: 13px;
+			}
+			.launcher-bar button {
+				font-size: 13px;
+				padding: 8px 16px;
+			}
+			.info-desktop { display: none; }
+			.info-mobile { display: inline; }
+		}
+
+		/* === Tooltip (głównie desktop, na mobile mamy etykiety pod ikonami) === */
 		.neuron-tooltip {
 			position: fixed;
 			background: #fff;
@@ -110,9 +156,12 @@
 		<svg id="graph"></svg>
 	</div>
 
-	<!-- Pasek informacji i reset (overlay na dole) -->
+	<!-- Pasek informacji i reset -->
 	<div class="launcher-bar">
-		<span class="info">Przeciągnij węzły · scroll = zoom · klik ikony = pobierz</span>
+		<span class="info">
+			<span class="info-desktop">Przeciągnij węzły · scroll = zoom · klik ikony = pobierz</span>
+			<span class="info-mobile">Dotknij i przeciągnij · uszczypnij = zoom</span>
+		</span>
 		<button id="reset-btn">Reset</button>
 	</div>
 
@@ -123,6 +172,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 	<script>
 	(function() {
+		// === DETEKCJA URZĄDZENIA DOTYKOWEGO ===
+		const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
 		// === KATEGORIE ===
 		const cats = [
 			{ id: 'android', label: 'Android',  color: '#1D9E75' },
@@ -130,8 +182,8 @@
 		];
 
 		// === APLIKACJE ===
-		// Pole `url`  = link do pobrania (kliknięcie ikony otworzy/pobierze plik)
-		// Pole `name` = nazwa wyświetlana w tooltipie i pod ikoną
+		// Pole `url`  = link do pobrania (kliknięcie/tapnięcie ikony otworzy/pobierze plik)
+		// Pole `name` = nazwa wyświetlana pod ikoną i w tooltipie
 		// Pole `icon` = ikona z https://tabler-icons.io/ (bez prefiksu "ti-")
 		const apps = [
 			{
@@ -142,22 +194,14 @@
 				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
 			},
 			{
-				id:   'Ventusky',
-				cat:  'android',
-				name: 'Ventusky',
-				icon: 'device-mobile',
-				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/Ventusky.apk'
-			},			
-			
-			{
 				id:   'zoomnotes',
 				cat:  'ios',
 				name: 'ZoomNotes',
 				icon: 'notes',
 				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/ZoomNotes.ipa'
-			},
-			
-			
+			}
+			// Żeby dodać kolejną apkę, skopiuj blok powyżej. Przykład:
+			// { id: 'mojaApka', cat: 'android', name: 'Moja Apka', icon: 'device-mobile', url: 'https://...' }
 		];
 
 		const nodes = [
@@ -169,12 +213,12 @@
 				url:   a.url,
 				type:  'app',
 				color: cats.find(c => c.id === a.cat).color,
-				r:     26
+				r:     30                                  // większe na mobile dla wygody dotyku
 			}))
 		];
 
+		// Łączymy aplikacje z kategoriami (BEZ łączenia android-ios)
 		const links = apps.map(a => ({ source: a.cat, target: a.id }));
-		<!-- links.push({ source: 'android', target: 'ios' }); -->
 
 		const svg = d3.select('#graph');
 		const tooltip = document.getElementById('tooltip');
@@ -187,16 +231,33 @@
 
 		const g = svg.append('g');
 
-		// Zoom + pan
-		const zoom = d3.zoom().scaleExtent([0.3, 3]).on('zoom', e => g.attr('transform', e.transform));
+		// === ZOOM + PAN (działa też z pinch-to-zoom na mobile) ===
+		const zoom = d3.zoom()
+			.scaleExtent([0.3, 3])
+			.filter(event => {
+				// Zezwól na pinch (touch z 2 palcami) oraz scroll na desktopie
+				// Blokuj zoom przy pojedynczym dotyku węzła (żeby nie kolidował z drag)
+				if (event.type === 'wheel') return true;
+				if (event.type === 'touchstart' && event.touches.length >= 2) return true;
+				if (event.type === 'mousedown') return event.target.tagName === 'svg' || event.target === g.node();
+				return false;
+			})
+			.on('zoom', e => g.attr('transform', e.transform));
 		svg.call(zoom);
 
-		// Symulacja fizyki
+		// === SYMULACJA FIZYKI ===
+		// Większy odstęp i siła odpychania, żeby "wyspy" Android i iOS nie nachodziły na siebie
 		const sim = d3.forceSimulation(nodes)
 			.force('link', d3.forceLink(links).id(d => d.id).distance(d => d.target.type === 'app' ? 130 : 220).strength(0.5))
-			.force('charge', d3.forceManyBody().strength(-600))
+			.force('charge', d3.forceManyBody().strength(-700))
 			.force('center', d3.forceCenter(W / 2, H / 2))
-			.force('collide', d3.forceCollide().radius(d => d.r + 14));
+			.force('collide', d3.forceCollide().radius(d => d.r + 16))
+			.force('x', d3.forceX(d => {
+				// Lekkie rozciąganie kategorii na lewo/prawo, żeby były wyraźnie osobne
+				if (d.id === 'android') return W * 0.3;
+				if (d.id === 'ios')     return W * 0.7;
+				return W / 2;
+			}).strength(0.05));
 
 		// Linie
 		const link = g.append('g')
@@ -204,15 +265,34 @@
 			.attr('stroke-opacity', 0.7)
 			.selectAll('line').data(links).join('line').attr('stroke-width', 1.4);
 
-		// Węzły
+		// === DRAG z progiem (na mobile palec lekko drży, więc zwykły drag czasem fałszywie się włącza) ===
+		const DRAG_THRESHOLD = 8; // pikseli — dopiero powyżej tego dystansu uznajemy za drag
+
+		const drag = d3.drag()
+			.on('start', (e, d) => {
+				if (!e.active) sim.alphaTarget(0.3).restart();
+				d.fx = d.x; d.fy = d.y;
+				d._startX = e.x; d._startY = e.y;
+				d._dragged = false;
+			})
+			.on('drag', (e, d) => {
+				const dx = e.x - d._startX;
+				const dy = e.y - d._startY;
+				if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+					d._dragged = true;
+				}
+				d.fx = e.x; d.fy = e.y;
+			})
+			.on('end', (e, d) => {
+				if (!e.active) sim.alphaTarget(0);
+				d.fx = null; d.fy = null;
+			});
+
 		const node = g.append('g').selectAll('g').data(nodes).join('g')
 			.attr('class', d => d.type === 'app' && d.url ? 'app-clickable' : '')
-			.call(d3.drag()
-				.on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; d._dragged = false; })
-				.on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; d._dragged = true; })
-				.on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+			.call(drag);
 
-		// Kategorie
+		// === KATEGORIE ===
 		node.filter(d => d.type === 'cat')
 			.append('rect')
 			.attr('x', -65).attr('y', -19)
@@ -231,15 +311,24 @@
 			.attr('font-family', 'Arial, sans-serif')
 			.text(d => d.label);
 
-		// Aplikacje
+		// === APLIKACJE ===
 		const appNodes = node.filter(d => d.type === 'app');
+
+		// Większy "hit area" dla dotyku (niewidoczny prostokąt wokół ikony)
+		appNodes.append('rect')
+			.attr('x', -32).attr('y', -32)
+			.attr('width', 64).attr('height', 64)
+			.attr('rx', 14)
+			.attr('fill', 'transparent')
+			.attr('pointer-events', 'all');
 
 		appNodes.append('rect')
 			.attr('x', -26).attr('y', -26)
 			.attr('width', 52).attr('height', 52)
 			.attr('rx', 13)
 			.attr('fill', d => d.color)
-			.attr('stroke', 'rgba(255,255,255,0.25)');
+			.attr('stroke', 'rgba(255,255,255,0.25)')
+			.attr('pointer-events', 'none');
 
 		appNodes.each(function(d) {
 			const fo = d3.select(this).append('foreignObject')
@@ -252,61 +341,84 @@
 				.html('<i class="ti ti-' + d.icon + '" aria-hidden="true"></i>');
 		});
 
-		// Etykieta pod ikoną aplikacji
+		// Etykieta pod ikoną
 		appNodes.append('text')
 			.attr('text-anchor', 'middle')
-			.attr('dy', 44)
-			.attr('font-size', 11)
-			.attr('fill', 'rgba(255,255,255,0.85)')
+			.attr('dy', 50)
+			.attr('font-size', 12)
+			.attr('font-weight', 500)
+			.attr('fill', 'rgba(255,255,255,0.9)')
 			.attr('font-family', 'Arial, sans-serif')
 			.attr('pointer-events', 'none')
 			.text(d => d.name);
 
-		// Tooltip + klik
-		appNodes
-			.on('mouseenter', function(event, d) {
-				if (!d.name) return;
-				tooltip.textContent = d.name;
-				tooltip.style.left = (event.clientX + 14) + 'px';
-				tooltip.style.top  = (event.clientY - 32) + 'px';
-				tooltip.classList.add('visible');
-			})
-			.on('mousemove', function(event) {
-				tooltip.style.left = (event.clientX + 14) + 'px';
-				tooltip.style.top  = (event.clientY - 32) + 'px';
-			})
-			.on('mouseleave', function() {
-				tooltip.classList.remove('visible');
-			})
-			.on('click', function(event, d) {
-				if (d._dragged) { d._dragged = false; return; }
-				if (d.url) {
-					window.location.href = d.url;
-				}
-			});
+		// === INTERAKCJE ===
+		// Na desktopie: hover pokazuje tooltip
+		// Na mobile: tooltip jest niepotrzebny (etykieta jest pod ikoną)
+		if (!isTouch) {
+			appNodes
+				.on('mouseenter', function(event, d) {
+					if (!d.name) return;
+					tooltip.textContent = d.name;
+					tooltip.style.left = (event.clientX + 14) + 'px';
+					tooltip.style.top  = (event.clientY - 32) + 'px';
+					tooltip.classList.add('visible');
+				})
+				.on('mousemove', function(event) {
+					tooltip.style.left = (event.clientX + 14) + 'px';
+					tooltip.style.top  = (event.clientY - 32) + 'px';
+				})
+				.on('mouseleave', function() {
+					tooltip.classList.remove('visible');
+				});
+		}
 
-		// Tick
+		// === KLIKNIĘCIE / TAPNIĘCIE — pobiera plik ===
+		appNodes.on('click', function(event, d) {
+			if (d._dragged) { d._dragged = false; return; }
+			if (d.url) {
+				window.location.href = d.url;
+			}
+		});
+
+		// === TICK ===
 		sim.on('tick', () => {
 			link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
 				.attr('x2', d => d.target.x).attr('y2', d => d.target.y);
 			node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
 		});
 
-		// Reset
+		// === RESET ===
 		document.getElementById('reset-btn').addEventListener('click', () => {
 			nodes.forEach(n => { n.fx = null; n.fy = null; });
 			sim.alpha(1).restart();
 			svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
 		});
 
-		// Reaguj na zmianę rozmiaru okna
-		window.addEventListener('resize', () => {
+		// === RESIZE / OBRÓT EKRANU ===
+		function handleResize() {
 			const s = getSize();
 			W = s.W; H = s.H;
 			svg.attr('viewBox', '0 0 ' + W + ' ' + H);
 			sim.force('center', d3.forceCenter(W / 2, H / 2));
+			sim.force('x', d3.forceX(d => {
+				if (d.id === 'android') return W * 0.3;
+				if (d.id === 'ios')     return W * 0.7;
+				return W / 2;
+			}).strength(0.05));
 			sim.alpha(0.3).restart();
-		});
+		}
+		window.addEventListener('resize', handleResize);
+		window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
+
+		// Blokuj domyślny gest "swipe wstecz" w niektórych przeglądarkach mobilnych
+		document.addEventListener('gesturestart', e => e.preventDefault());
+		document.addEventListener('touchmove', e => {
+			// Pozwól D3 obsługiwać dotyk wewnątrz launchera, blokuj scroll całej strony
+			if (e.touches.length > 1 || e.target.closest('.neuron-launcher')) {
+				e.preventDefault();
+			}
+		}, { passive: false });
 	})();
 	</script>
 
