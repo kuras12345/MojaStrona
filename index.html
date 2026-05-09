@@ -5,7 +5,6 @@
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-	<!-- VIEWPORT - kluczowe dla mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="mobile-web-app-capable" content="yes" />
@@ -17,14 +16,12 @@
 	<meta name="description" content="Serwis o starych grach pochodzących z Nintendo Entertainment System" />
 	<meta name="keywords" content="gry, komputerowe, retro, nes, konsole, retrogranie, stare gry" />
 
-	<!-- Ikony Tabler -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 
 	<style>
-		/* === RESET + FULL SCREEN === */
 		* {
-			-webkit-tap-highlight-color: transparent;   /* brak niebieskiego błysku po tapnięciu w iOS/Android */
-			-webkit-touch-callout: none;                 /* brak menu po długim przytrzymaniu */
+			-webkit-tap-highlight-color: transparent;
+			-webkit-touch-callout: none;
 			-webkit-user-select: none;
 			user-select: none;
 			box-sizing: border-box;
@@ -36,12 +33,10 @@
 			height: 100%;
 			overflow: hidden;
 			background: #0d0d0d;
-			overscroll-behavior: none;                   /* blokuje "bounce" w iOS Safari */
-			touch-action: none;                          /* nie przewijaj/nie zoomuj domyślnie */
-			-webkit-overflow-scrolling: auto;
+			overscroll-behavior: none;
+			touch-action: none;
 		}
 
-		/* === LAUNCHER — wypełnia cały viewport === */
 		.neuron-launcher {
 			position: fixed;
 			inset: 0;
@@ -55,76 +50,12 @@
 			height: 100%;
 			display: block;
 			cursor: grab;
-			touch-action: none;                          /* D3 zoom obsługuje pinch sam */
+			touch-action: none;
 		}
 		.neuron-launcher svg:active {
 			cursor: grabbing;
 		}
 
-		/* === Pasek z informacją + reset (na dole) === */
-		.launcher-bar {
-			position: fixed;
-			bottom: calc(20px + env(safe-area-inset-bottom)); /* nie zachodzi na pasek "home" iPhone X+ */
-			left: 50%;
-			transform: translateX(-50%);
-			z-index: 10;
-			display: flex;
-			gap: 16px;
-			align-items: center;
-			background: rgba(13, 13, 13, 0.7);
-			backdrop-filter: blur(8px);
-			-webkit-backdrop-filter: blur(8px);
-			padding: 12px 22px;
-			border-radius: 36px;
-			border: 1px solid rgba(255,255,255,0.08);
-			max-width: calc(100vw - 24px);
-		}
-		.launcher-bar .info {
-			font-size: 16px;
-			color: #ddd;
-			font-family: Arial, sans-serif;
-		}
-		.launcher-bar button {
-			font-size: 15px;
-			padding: 10px 22px;
-			background: rgba(255,255,255,0.1);
-			color: #fff;
-			border: 1px solid rgba(255,255,255,0.2);
-			border-radius: 24px;
-			cursor: pointer;
-			font-family: Arial, sans-serif;
-			min-height: 44px;                            /* Apple HIG zalecane min. dla touch */
-			min-width: 44px;
-			-webkit-appearance: none;
-			appearance: none;
-		}
-		.launcher-bar button:active {
-			background: rgba(255,255,255,0.25);
-			transform: scale(0.96);
-		}
-
-		/* === Mobile: krótszy tekst i mniejszy pasek === */
-		.info-desktop { display: inline; }
-		.info-mobile { display: none; }
-
-		@media (max-width: 700px) {
-			.launcher-bar {
-				gap: 10px;
-				padding: 10px 16px;
-				bottom: calc(14px + env(safe-area-inset-bottom));
-			}
-			.launcher-bar .info {
-				font-size: 13px;
-			}
-			.launcher-bar button {
-				font-size: 13px;
-				padding: 8px 16px;
-			}
-			.info-desktop { display: none; }
-			.info-mobile { display: inline; }
-		}
-
-		/* === Tooltip (głównie desktop, na mobile mamy etykiety pod ikonami) === */
 		.neuron-tooltip {
 			position: fixed;
 			background: #fff;
@@ -151,54 +82,51 @@
 
 <body>
 
-	<!-- LAUNCHER — full screen sieć aplikacji -->
 	<div class="neuron-launcher">
 		<svg id="graph"></svg>
 	</div>
 
-	<!-- Tooltip z nazwą aplikacji -->
 	<div class="neuron-tooltip" id="tooltip"></div>
 
-	<!-- D3.js -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 	<script>
 	(function() {
-		// === DETEKCJA URZĄDZENIA DOTYKOWEGO ===
 		const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-		// === KATEGORIE === (główne węzły, nieklikalne)
+		// ====== KATEGORIE (najwyższy poziom) ======
 		const cats = [
-			{ id: 'android', label: 'Android',  color: '#1D9E75' },
-			{ id: 'ios',     label: 'iOS',      color: '#378ADD' }
+			{ id: 'android', label: 'Android', color: '#1D9E75' },
+			{ id: 'ios',     label: 'iOS',     color: '#378ADD' }
 		];
 
-		// === PODKATEGORIE === (opcjonalne, nieklikalne węzły grupujące)
-		// Pole `cat` = id kategorii-rodzica (musi pasować do `cats` powyżej)
-		// Pole `label` = tekst wyświetlany w węźle
-		const subcats = [
-			{ id: 'android-programy', cat: 'android', label: 'Programy' }
-			// Żeby dodać kolejną podkategorię, skopiuj linijkę powyżej. Przykłady:
-			// { id: 'android-gry',  cat: 'android', label: 'Gry' },
-			// { id: 'ios-narzedzia', cat: 'ios',     label: 'Narzędzia' }
-		];
+		// ====== PODKATEGORIE — pomiędzy kategorią a aplikacjami ======
+		// Dla każdej kategorii jest jedna podkategoria "Programy"
+		const subcats = cats.map(c => ({
+			id:    'programy_' + c.id,
+			label: 'Programy',
+			cat:   c.id,
+			color: c.color
+		}));
 
-		// === APLIKACJE ===
-		// Pole `cat`    = id kategorii (Android/iOS) — wymagane (steruje kolorem i kolumną w układzie)
-		// Pole `parent` = id rodzica — OPCJONALNE
-		//                 może wskazywać na podkategorię (np. 'android-programy')
-		//                 LUB na inną aplikację (np. 'ventusky' — wtedy ta apka wisi pod tamtą)
-		//                 jeśli pominięte, ikona zawiśnie bezpośrednio pod kategorią `cat`
-		// Pole `url`    = link do pobrania (kliknięcie/tapnięcie ikony otworzy/pobierze plik)
-		// Pole `name`   = nazwa wyświetlana pod ikoną i w tooltipie
-		// Pole `icon`   = ikona z https://tabler-icons.io/ (bez prefiksu "ti-")
+		// ====== APLIKACJE ======
+		// Kolejność w tej tablicy = kolejność w łańcuchu (strzałki idą od pierwszej do następnej)
+		// Pole `url`  = link do pobrania
+		// Pole `name` = nazwa wyświetlana pod ikoną
+		// Pole `icon` = ikona z https://tabler-icons.io/ (bez prefiksu "ti-")
 		const apps = [
 			{
-				id:     'sygnic',
-				cat:    'android',
-				parent: 'ventusky',                  // ← Sygnic Truck wisi pod Ventusky
-				name:   'Sygnic Truck',
-				icon:   'truck',
-				url:    'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
+				id:   'ventusky',
+				cat:  'android',
+				name: 'Ventusky',
+				icon: 'cloud',
+				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/Ventusky.apk'
+			},
+			{
+				id:   'sygnic',
+				cat:  'android',
+				name: 'Sygnic Truck',
+				icon: 'truck',
+				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
 			},
 			{
 				id:   'zoomnotes',
@@ -206,61 +134,53 @@
 				name: 'ZoomNotes',
 				icon: 'notes',
 				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/ZoomNotes.ipa'
-			},
-			{
-				id:     'ventusky',
-				cat:    'android',
-				parent: 'android-programy',          // ← Ventusky wisi pod podkategorią "Programy"
-				name:   'Ventusky',
-				icon:   'cloud',
-				url:    'https://github.com/kuras12345/moje-lfs-projekt/raw/main/Ventusky.apk'
 			}
-			// Żeby dodać kolejną apkę, skopiuj blok powyżej. Przykłady:
-			// { id: 'mojaApka',    cat: 'android', name: 'Moja Apka', icon: 'device-mobile', url: 'https://...' }
-			// { id: 'innaProgram', cat: 'android', parent: 'android-programy', name: 'Inny', icon: 'app-window', url: 'https://...' }
-			// { id: 'pluginX',     cat: 'android', parent: 'ventusky', name: 'Plugin', icon: 'puzzle', url: 'https://...' }   ← wisi pod Ventusky
+			// Dodaj kolejną apkę kopiując blok powyżej.
+			// Strzałki będą szły od kategorii → Programy → pierwsza apka → druga apka → ...
 		];
 
-		// === BUDOWA WĘZŁÓW ===
+		// ====== BUDOWA ŁAŃCUCHÓW ======
+		// Dla każdej kategorii: cat → programy → app1 → app2 → ...
+		function chainForCat(catId) {
+			const catApps = apps.filter(a => a.cat === catId).map(a => a.id);
+			return [catId, 'programy_' + catId, ...catApps];
+		}
+
+		// ====== WSZYSTKIE WĘZŁY ======
+		// halfW i halfH = połowa szerokości/wysokości prostokąta węzła (do obliczania końca strzałki)
 		const nodes = [
 			...cats.map(c => ({
-				id:    c.id,
-				label: c.label,
-				type:  'cat',
-				color: c.color,
-				r:     38
+				id: c.id, label: c.label, type: 'cat', color: c.color,
+				halfW: 70, halfH: 22
 			})),
-			...subcats.map(s => {
-				const parentCat = cats.find(c => c.id === s.cat);
-				return {
-					id:        s.id,
-					label:     s.label,
-					type:      'subcat',
-					color:     parentCat.color,
-					parentCat: s.cat,
-					r:         32
-				};
-			}),
+			...subcats.map(s => ({
+				id: s.id, label: s.label, type: 'subcat', color: s.color,
+				halfW: 55, halfH: 18
+			})),
 			...apps.map(a => ({
-				id:        a.id,
-				name:      a.name,
-				icon:      a.icon,
-				url:       a.url,
-				type:      'app',
-				color:     cats.find(c => c.id === a.cat).color,
-				parentCat: a.cat,
-				r:         30
+				id: a.id, name: a.name, icon: a.icon, url: a.url,
+				type: 'app',
+				color: cats.find(c => c.id === a.cat).color,
+				halfW: 26, halfH: 26
 			}))
 		];
 
-		// === BUDOWA POŁĄCZEŃ ===
-		// 1) kategoria → podkategoria
-		// 2) aplikacja → rodzic z `parent` (podkategoria LUB inna aplikacja) ALBO kategoria z `cat`
-		const links = [
-			...subcats.map(s => ({ source: s.cat, target: s.id })),
-			...apps.map(a => ({ source: a.parent || a.cat, target: a.id }))
-		];
+		// ====== LINKI (KRAWĘDZIE) — z kierunkiem ======
+		const links = [];
+		cats.forEach(c => {
+			const ch = chainForCat(c.id);
+			for (let i = 0; i < ch.length - 1; i++) {
+				links.push({ source: ch[i], target: ch[i + 1] });
+			}
+		});
 
+		// Zamień stringowe id w linkach na referencje do obiektów node
+		links.forEach(l => {
+			if (typeof l.source === 'string') l.source = nodes.find(n => n.id === l.source);
+			if (typeof l.target === 'string') l.target = nodes.find(n => n.id === l.target);
+		});
+
+		// ====== SVG ======
 		const svg = d3.select('#graph');
 		const tooltip = document.getElementById('tooltip');
 
@@ -270,9 +190,24 @@
 		let { W, H } = getSize();
 		svg.attr('viewBox', '0 0 ' + W + ' ' + H);
 
+		// === STRZAŁKA (marker) ===
+		const defs = svg.append('defs');
+		defs.append('marker')
+			.attr('id', 'arrow')
+			.attr('viewBox', '0 -5 10 10')
+			.attr('refX', 9)        // tip strzałki dokładnie na końcu linii
+			.attr('refY', 0)
+			.attr('markerWidth', 7)
+			.attr('markerHeight', 7)
+			.attr('orient', 'auto')
+			.attr('markerUnits', 'userSpaceOnUse')
+			.append('path')
+			.attr('d', 'M0,-5L10,0L0,5')
+			.attr('fill', 'rgba(255,255,255,0.65)');
+
 		const g = svg.append('g');
 
-		// === ZOOM + PAN (działa też z pinch-to-zoom na mobile) ===
+		// === ZOOM + PAN (też pinch na mobile) ===
 		const zoom = d3.zoom()
 			.scaleExtent([0.3, 3])
 			.filter(event => {
@@ -284,43 +219,63 @@
 			.on('zoom', e => g.attr('transform', e.transform));
 		svg.call(zoom);
 
-		// === Pomocnik: do której kolumny (lewa/prawa/środek) ciągnąć węzeł ===
-		function targetX(d, W) {
-			// Główna kategoria sama w sobie
-			if (d.id === 'android') return W * 0.3;
-			if (d.id === 'ios')     return W * 0.7;
-			// Podkategoria lub aplikacja — w stronę swojej kategorii nadrzędnej
-			if (d.parentCat === 'android') return W * 0.3;
-			if (d.parentCat === 'ios')     return W * 0.7;
-			return W / 2;
+		// ====== UKŁAD STATYCZNY — kategorie po lewej i prawej, łańcuch w dół ======
+		function layoutNodes() {
+			const ySpacing = Math.min(110, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
+			const startY = Math.max(80, H * 0.13);
+
+			cats.forEach((c, idx) => {
+				const ch = chainForCat(c.id);
+				// Android = lewa kolumna (0.3 W), iOS = prawa (0.7 W)
+				const x = idx === 0 ? W * 0.3 : W * 0.7;
+				ch.forEach((id, i) => {
+					const n = nodes.find(node => node.id === id);
+					if (n) {
+						n.x = n.fx = x;
+						n.y = n.fy = startY + i * ySpacing;
+					}
+				});
+			});
 		}
 
-		// === SYMULACJA FIZYKI ===
-		const sim = d3.forceSimulation(nodes)
-			.force('link', d3.forceLink(links).id(d => d.id).distance(d => {
-				// Linki krótsze do aplikacji, dłuższe między kategorią a podkategorią
-				if (d.target.type === 'app')    return 130;
-				if (d.target.type === 'subcat') return 170;
-				return 220;
-			}).strength(0.5))
-			.force('charge', d3.forceManyBody().strength(-700))
-			.force('center', d3.forceCenter(W / 2, H / 2))
-			.force('collide', d3.forceCollide().radius(d => d.r + 16))
-			.force('x', d3.forceX(d => targetX(d, W)).strength(0.05));
-
-		// Linie
+		// ====== LINIE (krawędzie) ======
 		const link = g.append('g')
-			.attr('stroke', 'rgba(255,255,255,0.25)')
-			.attr('stroke-opacity', 0.7)
-			.selectAll('line').data(links).join('line').attr('stroke-width', 1.4);
+			.attr('stroke', 'rgba(255,255,255,0.45)')
+			.attr('stroke-opacity', 0.8)
+			.selectAll('line').data(links).join('line')
+			.attr('stroke-width', 1.6)
+			.attr('marker-end', 'url(#arrow)');
 
-		// === DRAG z progiem (na mobile palec lekko drży, więc zwykły drag czasem fałszywie się włącza) ===
+		// ====== OBLICZANIE KOŃCÓW LINII (żeby strzałka kończyła się na krawędzi prostokąta, nie w jego środku) ======
+		function rectEdgeOffset(node, ux, uy) {
+			const aux = Math.abs(ux), auy = Math.abs(uy);
+			if (aux < 0.001) return node.halfH;
+			if (auy < 0.001) return node.halfW;
+			const tx = node.halfW / aux;
+			const ty = node.halfH / auy;
+			return Math.min(tx, ty);
+		}
+		function endpoints(d) {
+			const sx = d.source.x, sy = d.source.y;
+			const tx = d.target.x, ty = d.target.y;
+			const dx = tx - sx, dy = ty - sy;
+			const dist = Math.sqrt(dx * dx + dy * dy);
+			if (dist === 0) return { x1: sx, y1: sy, x2: tx, y2: ty };
+			const ux = dx / dist, uy = dy / dist;
+			const sOff = rectEdgeOffset(d.source, ux, uy);
+			const tOff = rectEdgeOffset(d.target, ux, uy) + 6; // +6 = miejsce na grot strzałki
+			return {
+				x1: sx + ux * sOff,
+				y1: sy + uy * sOff,
+				x2: tx - ux * tOff,
+				y2: ty - uy * tOff
+			};
+		}
+
+		// ====== DRAG ======
 		const DRAG_THRESHOLD = 8;
-
 		const drag = d3.drag()
 			.on('start', (e, d) => {
-				if (!e.active) sim.alphaTarget(0.3).restart();
-				d.fx = d.x; d.fy = d.y;
 				d._startX = e.x; d._startY = e.y;
 				d._dragged = false;
 			})
@@ -330,61 +285,53 @@
 				if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
 					d._dragged = true;
 				}
-				d.fx = e.x; d.fy = e.y;
-			})
-			.on('end', (e, d) => {
-				if (!e.active) sim.alphaTarget(0);
-				d.fx = null; d.fy = null;
+				d.x = d.fx = e.x;
+				d.y = d.fy = e.y;
+				updateLayout();
 			});
 
+		// ====== WĘZŁY ======
 		const node = g.append('g').selectAll('g').data(nodes).join('g')
 			.attr('class', d => d.type === 'app' && d.url ? 'app-clickable' : '')
 			.call(drag);
 
-		// === KATEGORIE (duże, pełne wypełnienie) ===
-		node.filter(d => d.type === 'cat')
-			.append('rect')
-			.attr('x', -65).attr('y', -19)
-			.attr('width', 130).attr('height', 38)
-			.attr('rx', 19)
+		// --- Kategoria (Android, iOS) ---
+		const catSel = node.filter(d => d.type === 'cat');
+		catSel.append('rect')
+			.attr('x', d => -d.halfW).attr('y', d => -d.halfH)
+			.attr('width',  d => d.halfW * 2)
+			.attr('height', d => d.halfH * 2)
+			.attr('rx', 22)
 			.attr('fill', d => d.color)
 			.attr('stroke', 'rgba(255,255,255,0.2)');
-
-		node.filter(d => d.type === 'cat')
-			.append('text')
-			.attr('text-anchor', 'middle')
-			.attr('dy', 5)
-			.attr('font-size', 15)
-			.attr('font-weight', 500)
-			.attr('fill', 'white')
-			.attr('font-family', 'Arial, sans-serif')
+		catSel.append('text')
+			.attr('text-anchor', 'middle').attr('dy', 5)
+			.attr('font-size', 16).attr('font-weight', 500)
+			.attr('fill', 'white').attr('font-family', 'Arial, sans-serif')
+			.attr('pointer-events', 'none')
 			.text(d => d.label);
 
-		// === PODKATEGORIE (mniejsze, półprzezroczyste — wizualnie pomiędzy kategorią a aplikacją) ===
-		node.filter(d => d.type === 'subcat')
-			.append('rect')
-			.attr('x', -55).attr('y', -16)
-			.attr('width', 110).attr('height', 32)
-			.attr('rx', 16)
-			.attr('fill', d => d.color)
-			.attr('fill-opacity', 0.35)
+		// --- Podkategoria (Programy) ---
+		const subSel = node.filter(d => d.type === 'subcat');
+		subSel.append('rect')
+			.attr('x', d => -d.halfW).attr('y', d => -d.halfH)
+			.attr('width',  d => d.halfW * 2)
+			.attr('height', d => d.halfH * 2)
+			.attr('rx', 18)
+			.attr('fill', 'rgba(255,255,255,0.06)')
 			.attr('stroke', d => d.color)
 			.attr('stroke-width', 1.5);
-
-		node.filter(d => d.type === 'subcat')
-			.append('text')
-			.attr('text-anchor', 'middle')
-			.attr('dy', 5)
-			.attr('font-size', 13)
-			.attr('font-weight', 500)
-			.attr('fill', 'white')
-			.attr('font-family', 'Arial, sans-serif')
+		subSel.append('text')
+			.attr('text-anchor', 'middle').attr('dy', 4)
+			.attr('font-size', 13).attr('font-weight', 500)
+			.attr('fill', 'white').attr('font-family', 'Arial, sans-serif')
+			.attr('pointer-events', 'none')
 			.text(d => d.label);
 
-		// === APLIKACJE ===
+		// --- Aplikacje ---
 		const appNodes = node.filter(d => d.type === 'app');
 
-		// Większy "hit area" dla dotyku
+		// Niewidoczna większa strefa kliknięcia dla wygody dotyku
 		appNodes.append('rect')
 			.attr('x', -32).attr('y', -32)
 			.attr('width', 64).attr('height', 64)
@@ -392,6 +339,7 @@
 			.attr('fill', 'transparent')
 			.attr('pointer-events', 'all');
 
+		// Widoczny kwadrat z ikoną
 		appNodes.append('rect')
 			.attr('x', -26).attr('y', -26)
 			.attr('width', 52).attr('height', 52)
@@ -413,16 +361,13 @@
 
 		// Etykieta pod ikoną
 		appNodes.append('text')
-			.attr('text-anchor', 'middle')
-			.attr('dy', 50)
-			.attr('font-size', 12)
-			.attr('font-weight', 500)
-			.attr('fill', 'rgba(255,255,255,0.9)')
-			.attr('font-family', 'Arial, sans-serif')
+			.attr('text-anchor', 'middle').attr('dy', 50)
+			.attr('font-size', 12).attr('font-weight', 500)
+			.attr('fill', 'rgba(255,255,255,0.9)').attr('font-family', 'Arial, sans-serif')
 			.attr('pointer-events', 'none')
 			.text(d => d.name);
 
-		// === INTERAKCJE ===
+		// ====== INTERAKCJE ======
 		if (!isTouch) {
 			appNodes
 				.on('mouseenter', function(event, d) {
@@ -440,8 +385,6 @@
 					tooltip.classList.remove('visible');
 				});
 		}
-
-		// === KLIKNIĘCIE / TAPNIĘCIE — pobiera plik ===
 		appNodes.on('click', function(event, d) {
 			if (d._dragged) { d._dragged = false; return; }
 			if (d.url) {
@@ -449,26 +392,33 @@
 			}
 		});
 
-		// === TICK ===
-		sim.on('tick', () => {
-			link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-				.attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+		// ====== AKTUALIZACJA POZYCJI ======
+		function updateLayout() {
+			link.each(function(d) {
+				const e = endpoints(d);
+				d3.select(this)
+					.attr('x1', e.x1).attr('y1', e.y1)
+					.attr('x2', e.x2).attr('y2', e.y2);
+			});
 			node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
-		});
+		}
 
-		// === RESIZE / OBRÓT EKRANU ===
+		// === START: ułóż węzły i narysuj ===
+		layoutNodes();
+		updateLayout();
+
+		// ====== RESIZE / OBRÓT ======
 		function handleResize() {
 			const s = getSize();
 			W = s.W; H = s.H;
 			svg.attr('viewBox', '0 0 ' + W + ' ' + H);
-			sim.force('center', d3.forceCenter(W / 2, H / 2));
-			sim.force('x', d3.forceX(d => targetX(d, W)).strength(0.05));
-			sim.alpha(0.3).restart();
+			layoutNodes();
+			updateLayout();
 		}
 		window.addEventListener('resize', handleResize);
 		window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
 
-		// Blokuj domyślny gest "swipe wstecz" w niektórych przeglądarkach mobilnych
+		// Blokuj domyślne gesty przeglądarek mobilnych
 		document.addEventListener('gesturestart', e => e.preventDefault());
 		document.addEventListener('touchmove', e => {
 			if (e.touches.length > 1 || e.target.closest('.neuron-launcher')) {
