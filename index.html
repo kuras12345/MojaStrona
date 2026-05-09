@@ -14,8 +14,8 @@
 
 	<title>Moja strona</title>
 
-	<!-- <meta name="description" content="Serwis o starych grach pochodzących z Nintendo Entertainment System" /> -->
-	<!-- <meta name="keywords" content="gry, komputerowe, retro, nes, konsole, retrogranie, stare gry" /> -->
+	<meta name="description" content="Serwis o starych grach pochodzących z Nintendo Entertainment System" />
+	<meta name="keywords" content="gry, komputerowe, retro, nes, konsole, retrogranie, stare gry" />
 
 	<!-- Ikony Tabler -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
@@ -154,15 +154,6 @@
 	<!-- LAUNCHER — full screen sieć aplikacji -->
 	<div class="neuron-launcher">
 		<svg id="graph"></svg>
-	</div>
-
-	<!-- Pasek informacji i reset -->
-	<div class="launcher-bar">
-		<span class="info">
-			<span class="info-desktop">Przeciągnij węzły · scroll = zoom · klik ikony = pobierz</span>
-			<span class="info-mobile">Dotknij i przeciągnij · uszczypnij = zoom</span>
-		</span>
-		<button id="reset-btn">Reset</button>
 	</div>
 
 	<!-- Tooltip z nazwą aplikacji -->
@@ -393,13 +384,6 @@
 			link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
 				.attr('x2', d => d.target.x).attr('y2', d => d.target.y);
 			node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
-		});
-
-		// === RESET ===
-		document.getElementById('reset-btn').addEventListener('click', () => {
-			nodes.forEach(n => { n.fx = null; n.fy = null; });
-			sim.alpha(1).restart();
-			svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
 		});
 
 		// === RESIZE / OBRÓT EKRANU ===
