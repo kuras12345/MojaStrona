@@ -10,11 +10,6 @@
 	<meta name="description" content="Serwis o starych grach pochodzących z Nintendo Entertainment System" />
 	<meta name="keywords" content="gry, komputerowe, retro, nes, konsole, retrogranie, stare gry" />
 
-	<link href="style.css" rel="stylesheet" type="text/css" />
-	<link href="jQueryAssets/jquery.ui.core.min.css" rel="stylesheet" type="text/css">
-	<link href="jQueryAssets/jquery.ui.theme.min.css" rel="stylesheet" type="text/css">
-	<link href="jQueryAssets/jquery.ui.button.min.css" rel="stylesheet" type="text/css">
-
 	<!-- Ikony Tabler dla aplikacji w sieci węzłów -->
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
 
@@ -32,7 +27,7 @@
 		/* === LAUNCHER — wypełnia cały viewport === */
 		.neuron-launcher {
 			position: fixed;
-			inset: 0;                 /* top:0; right:0; bottom:0; left:0 */
+			inset: 0;
 			background: radial-gradient(circle at 50% 50%, #1f1f1f 0%, #0a0a0a 100%);
 			overflow: hidden;
 			z-index: 1;
@@ -45,92 +40,6 @@
 		}
 		.neuron-launcher svg:active {
 			cursor: grabbing;
-		}
-
-		/* === HEADER — unosi się nad siecią u góry === */
-		.header {
-			position: fixed;
-			top: 0;
-			left: 0;
-			right: 0;
-			z-index: 10;
-			text-align: center;
-			padding: 14px 0 10px;
-			background: rgba(13, 13, 13, 0.7);
-			backdrop-filter: blur(8px);
-			-webkit-backdrop-filter: blur(8px);
-			border-bottom: 1px solid rgba(255,255,255,0.05);
-		}
-		.header .logo {
-			color: #fff;
-			font-family: Arial, sans-serif;
-			font-size: 28px;
-			font-weight: 300;
-			letter-spacing: 1px;
-		}
-
-		/* === NAV — pod headerem, też jako overlay === */
-		.nav {
-			position: fixed;
-			top: 60px;
-			left: 0;
-			right: 0;
-			z-index: 9;
-			background: rgba(13, 13, 13, 0.6);
-			backdrop-filter: blur(6px);
-			-webkit-backdrop-filter: blur(6px);
-			border-bottom: 1px solid rgba(255,255,255,0.05);
-		}
-		.nav ol {
-			margin: 0;
-			padding: 8px 24px;
-			list-style: none;
-			display: flex;
-			gap: 30px;
-			justify-content: center;
-		}
-		.nav ol > li {
-			position: relative;
-		}
-		.nav ol > li > a {
-			color: #ddd;
-			text-decoration: none;
-			font-family: Arial, sans-serif;
-			font-size: 14px;
-			padding: 6px 12px;
-			border-radius: 6px;
-			transition: background 0.15s;
-		}
-		.nav ol > li > a:hover {
-			background: rgba(255,255,255,0.08);
-		}
-		.nav ol > li > ul {
-			display: none;
-			position: absolute;
-			top: 100%;
-			left: 0;
-			margin: 4px 0 0;
-			padding: 6px 0;
-			list-style: none;
-			background: #1a1a1a;
-			border: 1px solid rgba(255,255,255,0.1);
-			border-radius: 8px;
-			min-width: 160px;
-			box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-		}
-		.nav ol > li:hover > ul {
-			display: block;
-		}
-		.nav ol > li > ul > li > a {
-			display: block;
-			padding: 8px 16px;
-			color: #ccc;
-			font-size: 13px;
-			text-decoration: none;
-			font-family: Arial, sans-serif;
-		}
-		.nav ol > li > ul > li > a:hover {
-			background: rgba(255,255,255,0.08);
 		}
 
 		/* === Pasek z informacją + reset (na dole) === */
@@ -191,39 +100,10 @@
 		.app-clickable {
 			cursor: pointer !important;
 		}
-
-		/* Stary div .content nie jest już używany */
-		.content { display: none; }
 	</style>
-
-	<script src="jQueryAssets/jquery-1.11.1.min.js"></script>
-	<script src="jQueryAssets/jquery.ui-1.10.4.button.min.js"></script>
 </head>
 
 <body>
-
-	<!-- Header (overlay nad launcherem) -->
-	<div class="header">
-		<div class="logo">
-			<span style="color: #c34f4f">Moja</span>strona
-		</div>
-	</div>
-
-	<!-- Nawigacja (overlay) -->
-	<div class="nav">
-		<ol>
-			<li><a href="#">Android</a>
-				<ul>
-					<li><a href="https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk">Sygnic Truck</a></li>
-				</ul>
-			</li>
-			<li><a href="#">IOS</a>
-				<ul>
-					<li><a href="https://github.com/kuras12345/moje-lfs-projekt/raw/main/ZoomNotes.ipa">ZoomNotes</a></li>
-				</ul>
-			</li>
-		</ol>
-	</div>
 
 	<!-- LAUNCHER — full screen sieć aplikacji -->
 	<div class="neuron-launcher">
@@ -239,9 +119,6 @@
 	<!-- Tooltip z nazwą aplikacji -->
 	<div class="neuron-tooltip" id="tooltip"></div>
 
-	<!-- Stary kontener (ukryty, zostawiony żeby nie psuć Twojego style.css jeśli się do niego odwołuje) -->
-	<div class="content"></div>
-
 	<!-- D3.js -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 	<script>
@@ -254,7 +131,7 @@
 
 		// === APLIKACJE ===
 		// Pole `url`  = link do pobrania (kliknięcie ikony otworzy/pobierze plik)
-		// Pole `name` = nazwa wyświetlana w tooltipie
+		// Pole `name` = nazwa wyświetlana w tooltipie i pod ikoną
 		// Pole `icon` = ikona z https://tabler-icons.io/ (bez prefiksu "ti-")
 		const apps = [
 			{
@@ -294,7 +171,6 @@
 		const svg = d3.select('#graph');
 		const tooltip = document.getElementById('tooltip');
 
-		// Dynamiczny rozmiar pod cały viewport
 		function getSize() {
 			return { W: window.innerWidth, H: window.innerHeight };
 		}
