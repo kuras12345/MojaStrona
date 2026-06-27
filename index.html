@@ -96,7 +96,6 @@
 		// ====== KATEGORIE (najwyższy poziom) ======
 		const cats = [
 			{ id: 'android', label: 'Android', color: '#1D9E75' },
-			{ id: 'różne',     label: 'Różne',     color: '#378ADD' },			
 			{ id: 'ios',     label: 'iOS',     color: '#378ADD' }
 			
 
@@ -251,23 +250,23 @@
 		svg.call(zoom);
 
 		// ====== UKŁAD STATYCZNY — kategorie po lewej i prawej, łańcuch w dół ======
-	//	function layoutNodes() {
-	//		const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
-	//		const startY = Math.max(80, H * 0.12);
-    //
-	//		cats.forEach((c, idx) => {
-	//			const ch = chainForCat(c.id);
-	//			// Android = lewa kolumna (0.3 W), iOS = prawa (0.7 W)
-	//			const x = idx === 0 ? W * 0.3 : W * 0.7;
-	//			ch.forEach((id, i) => {
-	//				const n = nodes.find(node => node.id === id);
-	//				if (n) {
-	//					n.x = n.fx = x;
-	//					n.y = n.fy = startY + i * ySpacing;
-	//				}
-	//			});
-	//		});
-	//	}
+		function layoutNodes() {
+			const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
+			const startY = Math.max(80, H * 0.12);
+    
+      		cats.forEach((c, idx) => {
+				const ch = chainForCat(c.id);
+				// Android = lewa kolumna (0.3 W), iOS = prawa (0.7 W)
+				const x = idx === 0 ? W * 0.3 : W * 0.7;
+				ch.forEach((id, i) => {
+					const n = nodes.find(node => node.id === id);
+					if (n) {
+						n.x = n.fx = x;
+						n.y = n.fy = startY + i * ySpacing;
+					}
+				});
+			});
+		}
 
     function layoutNodes() {
     const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
@@ -289,13 +288,7 @@
         });
     });
 }
-{
-    id:   'anydesk',
-    cat:  'różne', // Powiązanie z nową kategorią
-    name: 'AnyDesk',
-    icon: 'desktop',
-    url:  'https://link-do-pobrania.com'
-}		
+	
 		// ====== LINIE (krawędzie) ======
 		const link = g.append('g')
 			.attr('stroke', 'rgba(255,255,255,0.45)')
