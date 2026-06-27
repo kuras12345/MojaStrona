@@ -253,8 +253,8 @@
 		function layoutNodes() {
 			const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
 			const startY = Math.max(80, H * 0.12);
-    
-      		cats.forEach((c, idx) => {
+
+			cats.forEach((c, idx) => {
 				const ch = chainForCat(c.id);
 				// Android = lewa kolumna (0.3 W), iOS = prawa (0.7 W)
 				const x = idx === 0 ? W * 0.3 : W * 0.7;
@@ -268,27 +268,6 @@
 			});
 		}
 
-    function layoutNodes() {
-    const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
-    const startY = Math.max(80, H * 0.12);
-
-    cats.forEach((c, idx) => {
-        const ch = chainForCat(c.id);
-        
-        // DYNAMICZNE OBLICZANIE X:
-        // Dzielimy szerokość ekranu przez liczbę kategorii + 1
-        const x = W * (idx + 1) / (cats.length + 1);
-
-        ch.forEach((id, i) => {
-            const n = nodes.find(node => node.id === id);
-            if (n) {
-                n.x = n.fx = x;
-                n.y = n.fy = startY + i * ySpacing;
-            }
-        });
-    });
-}
-	
 		// ====== LINIE (krawędzie) ======
 		const link = g.append('g')
 			.attr('stroke', 'rgba(255,255,255,0.45)')
