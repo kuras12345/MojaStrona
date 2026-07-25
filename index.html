@@ -97,8 +97,7 @@
 		const cats = [
 			{ id: 'android',  label: 'Android',   color: '#1D9E75' },
 			{ id: 'ios',      label: 'iOS',       color: '#378ADD' },
-			{ id: 'roznosc', label: 'różność',  color: '#B85C9E' }, 
-		    { id: 'nowy', label: 'nowy',  color: '#B85C9E' } ]
+			{ id: 'proznosc', label: 'Próżność',  color: '#B85C9E' } ]
 			
 
 		// ====== PODKATEGORIE — pomiędzy kategorią a aplikacjami ======
@@ -132,8 +131,8 @@
 				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/nawigacja.apk'
 			},
 			{
-				id:   'ZoomNotes',
-				cat:  'nowy',
+				id:   'zoomnotes',
+				cat:  'proznosc',
 				name: 'ZoomNotes',
 				icon: 'notes',
 				url:  'https://github.com/kuras12345/moje-lfs-projekt/raw/main/ZoomNotes.ipa'
@@ -237,22 +236,45 @@
 		svg.call(zoom);
 
 		// ====== UKŁAD STATYCZNY — kategorie po lewej i prawej, łańcuch w dół ======
-		function layoutNodes() {
-			const ySpacing = Math.min(135, (H - 160) / Math.max(2, Math.max(...cats.map(c => chainForCat(c.id).length))));
-			const startY = Math.max(80, H * 0.12);
+		// WAŻNE: układ jest liczony w stałych, "logicznych" jednostkach — NIE zależy
+		// od rozmiaru okna. Dzięki temu węzły nigdy się nie zagęszczają ani nie
+		// nachodzą na siebie na wąskim ekranie telefonu. Dopasowanie do konkretnego
+		// ekranu (laptop / telefon / obrót) robi funkcja fitToView() przez zoom.
+		const COL_SPACING = 220;   // odległość między kolumnami kategorii
+		const ROW_SPACING = 130;   // odległość między kolejnymi węzłami w łańcuchu
+		const START_Y     = 90;    // margines od góry
+		const maxChainLen = Math.max(...cats.map(c => chainForCat(c.id).length));
+		const LOGICAL_W = COL_SPACING * (cats.length + 1);
+		const LOGICAL_H = START_Y + maxChainLen * ROW_SPACING + 60;
 
+		function layoutNodes() {
 			cats.forEach((c, idx) => {
 				const ch = chainForCat(c.id);
-				// Kolumny rozłożone równomiernie na szerokości ekranu
-				const x = W * (idx + 1) / (cats.length + 1);
+				// Kolumny rozłożone równomiernie w stałej, logicznej przestrzeni
+				const x = COL_SPACING * (idx + 1);
 				ch.forEach((id, i) => {
 					const n = nodes.find(node => node.id === id);
 					if (n) {
 						n.x = n.fx = x;
-						n.y = n.fy = startY + i * ySpacing;
+						n.y = n.fy = START_Y + i * ROW_SPACING;
 					}
 				});
 			});
+		}
+
+		// ====== DOPASOWANIE WIDOKU DO EKRANU (laptop / telefon / obrót) ======
+		// Skaluje i centruje cały, stały układ (LOGICAL_W x LOGICAL_H) tak, żeby
+		// zawsze mieścił się w całości na ekranie — bez przycinania i bez nakładania
+		// się elementów. Użytkownik może potem swobodnie dopinchować / przesunąć.
+		function fitToView() {
+			const margin = 60;
+			const contentW = LOGICAL_W + margin * 2;
+			const contentH = LOGICAL_H + margin * 2;
+			let s = Math.min(W / contentW, H / contentH);
+			s = Math.min(Math.max(s, 0.3), 1.2); // trzymaj się w granicach scaleExtent i nie powiększaj zbyt mocno
+			const tx = (W - LOGICAL_W * s) / 2;
+			const ty = (H - LOGICAL_H * s) / 2;
+			svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(s));
 		}
 
 		// ====== LINIE (krawędzie) ======
@@ -417,14 +439,16 @@
 		// === START: ułóż węzły i narysuj ===
 		layoutNodes();
 		updateLayout();
+		fitToView();
 
 		// ====== RESIZE / OBRÓT ======
 		function handleResize() {
 			const s = getSize();
 			W = s.W; H = s.H;
 			svg.attr('viewBox', '0 0 ' + W + ' ' + H);
-			layoutNodes();
-			updateLayout();
+			// Pozycje węzłów są stałe (logiczne) — przy zmianie rozmiaru/obrocie
+			// ekranu wystarczy ponownie dopasować powiększenie/przesunięcie widoku.
+			fitToView();
 		}
 		window.addEventListener('resize', handleResize);
 		window.addEventListener('orientationchange', () => setTimeout(handleResize, 200));
