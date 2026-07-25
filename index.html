@@ -95,8 +95,9 @@
 
 		// ====== KATEGORIE (najwyższy poziom) ======
 		const cats = [
-			{ id: 'android', label: 'Android', color: '#1D9E75' },
-			{ id: 'ios',     label: 'iOS',     color: '#378ADD' } ]
+			{ id: 'android', label: 'Android',   color: '#1D9E75' },
+			{ id: 'ios',     label: 'iOS',       color: '#378ADD' },
+			{ id: 'inne',    label: 'Różności',  color: '#B0533B' } ]
 			
 
 		// ====== PODKATEGORIE — pomiędzy kategorią a aplikacjami ======
@@ -241,8 +242,8 @@
 
 			cats.forEach((c, idx) => {
 				const ch = chainForCat(c.id);
-				// Android = lewa kolumna (0.3 W), iOS = prawa (0.7 W)
-				const x = idx === 0 ? W * 0.3 : W * 0.7;
+				// Kolumny rozłożone równomiernie na szerokości ekranu (działa dla dowolnej liczby kategorii)
+				const x = W * (idx + 1) / (cats.length + 1);
 				ch.forEach((id, i) => {
 					const n = nodes.find(node => node.id === id);
 					if (n) {
